@@ -11,7 +11,6 @@
                     append
                     index-of)
          (only-in data/collection
-                  (index-of d:index-of)
                   (append d:append))
          relation)
 
@@ -29,7 +28,7 @@
           [tree-map (-> (-> any/c any/c)
                         sequence?
                         sequence?)]
-          [tree-filter (-> (-> any/c any/c)
+          [tree-filter (-> (-> any/c boolean?)
                            sequence?
                            sequence?)]
           [tree-fold (->* ((-> any/c any/c any/c) sequence?)
