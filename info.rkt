@@ -6,6 +6,8 @@
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
+                     "collections-doc"
+                     "functional-doc"
                      "rackunit-lib"
                      "sandbox-lib"))
 (define scribblings '(("scribblings/lazytree.scrbl" (multi-page))))
