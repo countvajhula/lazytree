@@ -4,12 +4,16 @@
          scribble/example
          racket/sandbox
          @for-label[lazytree
-                    (except-in data/collection
-                               foldl
-                               foldl/steps
-                               append
-                               index-of)
-					relation]]
+                    (except-in racket
+                               map
+                               filter
+                               sequence?)
+                    (only-in data/collection
+                             map
+                             filter
+                             sequence?)
+					(only-in relation
+                             fold)]]
 
 @title{Lightweight Lazy Trees}
 @author{Siddhartha Kasivajhula}
@@ -57,7 +61,7 @@ This module provides utilities to leverage the natural hierarchical structure of
                         [#:converse? converse? boolean? #f])
          sequence?]{
 
-  Traverse a tree using one of the @hyperlink["https://en.wikipedia.org/wiki/Tree_traversal"]{standard traversal orders}, i.e. preorder, postorder, in-order or level-order traversal. If @racket[converse?] is true, then traverses right-to-left instead of left-to-right. Although these traversals are canonically defined for binary trees, trees with an arity greater than two are still supported, being traversed as if they were binary trees. For instance, an in-order traversal would visit a single child prior to visiting the parent, and then visit all of the remaining children of that parent. See @hyperlink["http://ceadserv1.nku.edu/longa/classes/mat385_resources/docs/traversal.htm"]{here} for some helpful animations of tree traversals.
+  Traverse a tree using one of the @hyperlink["https://en.wikipedia.org/wiki/Tree_traversal"]{standard traversal orders}, i.e. preorder, postorder, in-order or level-order traversal. If @racket[converse?] is true, then traverses right-to-left instead of left-to-right. Although these traversals are canonically defined for binary trees, trees with an arity greater than two are still supported, using trivial generalizations of the binary tree versions. For instance, an in-order traversal would visit a single child prior to visiting the parent, and then visit all of the remaining children of that parent. See @hyperlink["http://ceadserv1.nku.edu/longa/classes/mat385_resources/docs/traversal.htm"]{here} for some helpful animations of tree traversals.
 
 @examples[
     #:eval eval-for-docs
@@ -78,7 +82,7 @@ This module provides utilities to leverage the natural hierarchical structure of
                    [t sequence?])
          sequence?]{
 
-  Similar to @racket[map], lazily maps each element in the tree under the function @racket[f].
+  Analogously to @racket[map], lazily maps each element in the tree under the function @racket[f].
 
 @examples[
     #:eval eval-for-docs
@@ -95,7 +99,7 @@ This module provides utilities to leverage the natural hierarchical structure of
                       [t sequence?])
          sequence?]{
 
-  Similar to @racket[filter], lazily filters each element in the tree under the function @racket[f]. If a node is filtered out, none of its descendants are present in the resulting tree.
+  Analogously to @racket[filter], lazily filters each element in the tree under the function @racket[f]. If a node is filtered out, none of its descendants are present in the resulting tree.
 
 @examples[
     #:eval eval-for-docs
@@ -117,7 +121,7 @@ This module provides utilities to leverage the natural hierarchical structure of
                     [#:with-steps? with-steps? boolean? #f])
          any/c]{
 
-  Similar to @racket[fold], combines elements of the tree using the function @racket[f]. While normal folds have a left or right direction, the direction in the case of a tree fold is determined by the traversal order, which is specified via @racket[order].
+  Analogously to @racket[fold], combines elements of the tree using the function @racket[f]. While normal folds have a left or right direction, the direction of a tree fold is determined by the traversal order, which is specified via @racket[order].
 
 @examples[
     #:eval eval-for-docs
