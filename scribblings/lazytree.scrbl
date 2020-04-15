@@ -4,6 +4,11 @@
          scribble/example
          racket/sandbox
          @for-label[lazytree
+                    (except-in data/collection
+                               foldl
+                               foldl/steps
+                               append
+                               index-of)
 					relation]]
 
 @title{Lightweight Lazy Trees}
@@ -15,7 +20,7 @@ Lightweight, general-purpose utilities for working with tree-structured data.
 
 @table-of-contents[]
 
-This module provides utilities to leverage the natural tree structure of symbolic expressions (i.e. nested lists) to represent and perform computations on tree-structured data.
+This module provides utilities to leverage the natural hierarchical structure of nested lists (and streams) to represent and perform computations on tree-structured data.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -35,7 +40,7 @@ This module provides utilities to leverage the natural tree structure of symboli
 					[node any/c])
          sequence?]{
 
-  Construct a tree from a node (which could be any value) and a function @racket[f] that yields the next level of the hierarchy (i.e. "children" or "parents") given an input node. The function is recursively -- and lazily -- applied starting from @racket[node] to yield a stream representation of the tree. The representation, in list form, is simply (data child-1 child-2 ...), where each child has the same structure. A single-element stream represents a leaf node, containing only data and no children.
+  Construct a tree from a node (which could be any value) and a function @racket[f] that yields the next level of the hierarchy (i.e. "children" or "parents") given an input node. The function is recursively -- and lazily -- applied starting from @racket[node] to yield a stream representation of the tree. The representation, in list form, is simply @codeblock{(data child-1 child-2 ...)} where each child has the same structure. A single-element stream represents a leaf node, containing only data and no children.
 
 @examples[
     #:eval eval-for-docs
@@ -52,7 +57,7 @@ This module provides utilities to leverage the natural tree structure of symboli
                         [#:converse? converse? boolean? #f])
          sequence?]{
 
-  Traverse a tree using one of the standard traversal orders, i.e. preorder, postorder, in-order or level-order traversal. If @racket[converse?] is true, then traverses right-to-left instead of left-to-right.
+  Traverse a tree using one of the @hyperlink["https://en.wikipedia.org/wiki/Tree_traversal"]{standard traversal orders}, i.e. preorder, postorder, in-order or level-order traversal. If @racket[converse?] is true, then traverses right-to-left instead of left-to-right. Although these traversals are canonically defined for binary trees, trees with an arity greater than two are still supported, being traversed as if they were binary trees. For instance, an in-order traversal would visit a single child prior to visiting the parent, and then visit all of the remaining children of that parent. See @hyperlink["http://ceadserv1.nku.edu/longa/classes/mat385_resources/docs/traversal.htm"]{here} for some helpful animations of tree traversals.
 
 @examples[
     #:eval eval-for-docs
@@ -99,7 +104,7 @@ This module provides utilities to leverage the natural tree structure of symboli
 	(define cat (taxon "Cat" '()))
 	(define mammal (taxon "Mammal" (list dog cat)))
     (define t (make-tree taxon-children mammal))
-    (->list (tree-traverse (tree-filter (lambda (v) (/= (taxon-name v) "Dog")) t)))
+    (->list (tree-traverse (tree-map taxon-name (tree-filter (lambda (v) (/= (taxon-name v) "Dog")) t))))
   ]
 }
 
