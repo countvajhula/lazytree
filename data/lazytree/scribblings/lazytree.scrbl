@@ -22,9 +22,7 @@
 
 Lightweight, general-purpose utilities for working with tree-structured data.
 
-@table-of-contents[]
-
-This module provides utilities to leverage the natural hierarchical structure of nested lists (and streams) to represent and perform computations on tree-structured data.
+This module provides utilities to leverage the natural hierarchical structure of nested lists (and streams) to represent and perform computations on tree-structured data. The tree representation, in list form, is simply @codeblock{(data child ...)} where each child has the same structure. A single-element stream represents a leaf node, containing only data and no children. Any sequence with this structure is treatable as a tree for the purposes of the utilities provided here. For example, the list @codeblock{'(1 (2 (3) (4)) (5 (6)))} is a well-formed tree.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -44,7 +42,7 @@ This module provides utilities to leverage the natural hierarchical structure of
 					[node any/c])
          sequence?]{
 
-  Construct a tree from a node (which could be any value) and a function @racket[f] that yields the next level of the hierarchy (i.e. "children" or "parents") given an input node. The function is recursively -- and lazily -- applied starting from @racket[node] to yield a stream representation of the tree. The representation, in list form, is simply @codeblock{(data child-1 child-2 ...)} where each child has the same structure. A single-element stream represents a leaf node, containing only data and no children.
+  Construct a tree from a node (which could be any value) and a function @racket[f] that yields the next level of the hierarchy (i.e. "children" or "parents") given an input node. The function @racket[f] is recursively -- and lazily -- applied starting from @racket[node] to yield a stream exhibiting the canonical tree structure.
 
 @examples[
     #:eval eval-for-docs
