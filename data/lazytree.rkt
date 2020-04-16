@@ -60,6 +60,10 @@
 (define || disjoin)
 (define !! negate)
 
+(define (unthunk f . args)
+  (λ ignored-args
+    (apply f args)))
+
 (define (~remove-when #:how-many [how-many #f]
                       pred
                       seq)
