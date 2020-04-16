@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/countvajhula/lazytree.svg?branch=master
+    :target: https://travis-ci.org/countvajhula/lazytree
+
 lazytree
 ========
 Lightweight, general-purpose utilities for working with tree-structured data in Racket.
