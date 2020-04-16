@@ -13,7 +13,10 @@
                     index-of)
          (only-in data/collection
                   (append d:append))
-         relation)
+         relation/equivalence
+         relation/order
+         relation/transform
+         relation/algebraic)
 
 (provide (contract-out
           [make-tree (-> (-> any/c sequence?)
