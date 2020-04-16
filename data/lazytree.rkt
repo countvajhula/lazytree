@@ -5,6 +5,9 @@
          racket/generic
          racket/undefined
          racket/set
+         (only-in racket/function
+                  disjoin
+                  negate)
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -55,6 +58,9 @@
                       append
                       index-of)
            relation))
+
+(define || disjoin)
+(define !! negate)
 
 (define (~remove-when #:how-many [how-many #f]
                       pred
