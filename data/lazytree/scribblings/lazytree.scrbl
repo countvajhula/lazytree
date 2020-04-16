@@ -65,6 +65,12 @@ This module provides utilities to leverage the natural hierarchical structure of
 
 @examples[
     #:eval eval-for-docs
+    (define t '(1 (2 (3) (4)) (5 (6))))
+    (->list (tree-traverse #:order 'pre t))
+    (->list (tree-traverse #:converse? #t #:order 'pre t))
+    (->list (tree-traverse #:order 'post t))
+    (->list (tree-traverse #:order 'in t))
+    (->list (tree-traverse #:order 'level t))
 	(struct taxon (name children))
 	(define dog (taxon "Dog" '()))
 	(define cat (taxon "Cat" '()))

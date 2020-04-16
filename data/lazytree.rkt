@@ -5,9 +5,7 @@
          racket/generic
          racket/undefined
          racket/set
-         (only-in racket/function
-                  disjoin
-                  negate)
+         racket/function
          (except-in data/collection
                     foldl
                     foldl/steps
