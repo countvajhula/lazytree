@@ -1,5 +1,5 @@
 #lang info
-(define collection "lazytree")
+(define collection 'multi)
 (define deps '("base"
                "collections-lib"
                "relation"))

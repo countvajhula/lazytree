@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
-         @for-label[lazytree
+         @for-label[data/lazytree
                     (except-in racket
                                map
                                filter
@@ -18,7 +18,7 @@
 @title{Lightweight Lazy Trees}
 @author{Siddhartha Kasivajhula}
 
-@defmodule[lazytree]
+@defmodule[data/lazytree]
 
 Lightweight, general-purpose utilities for working with tree-structured data.
 
@@ -37,7 +37,7 @@ This module provides utilities to leverage the natural hierarchical structure of
                                                       foldl
                                                       foldl/steps))
 				                 '(require relation)
-								 '(require lazytree)
+								 '(require data/lazytree)
 								 '(require racket/stream))))
 
 @defproc[(make-tree [f (-> any/c sequence?)]
