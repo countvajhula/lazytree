@@ -3,6 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
+		 pict/private/layout
          @for-label[data/lazytree
                     (except-in racket
                                map
@@ -14,15 +15,6 @@
                              sequence?)
 					(only-in relation
                              fold)]]
-
-@title{Lightweight Lazy Trees}
-@author{Siddhartha Kasivajhula}
-
-@defmodule[data/lazytree]
-
-Lightweight, general-purpose utilities for working with tree-structured data.
-
-This module provides utilities to leverage the natural hierarchical structure of nested lists (and streams) to represent and perform computations on tree-structured data. The tree representation, in list form, is simply @codeblock{(data child ...)} where each child has the same structure. A single-element stream represents a leaf node, containing only data and no children. Any sequence with this structure is treatable as a tree for the purposes of the utilities provided here. For example, the list @codeblock{'(1 (2 (3) (4)) (5 (6)))} is a well-formed tree.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -37,6 +29,30 @@ This module provides utilities to leverage the natural hierarchical structure of
 				                 '(require relation)
 								 '(require data/lazytree)
 								 '(require racket/stream))))
+
+@(define tree-layout-eval (make-base-eval))
+@(tree-layout-eval '(require pict/tree-layout pict))
+@(tree-layout-eval '(define node-pict (circle 15 #:border-width 2)))
+
+@title{Lightweight Lazy Trees}
+@author{Siddhartha Kasivajhula}
+
+@defmodule[data/lazytree]
+
+Lightweight, general-purpose utilities for working with tree-structured data.
+
+This module provides utilities to leverage the natural hierarchical structure of nested lists (and streams) to represent and perform computations on tree-structured data. The tree representation, in list form, is simply @codeblock{(data child ...)} where each child has the same structure. A single-element stream represents a leaf node, containing only data and no children. Any sequence with this structure is treatable as a tree for the purposes of the utilities provided here. For example, the list @codeblock{'(1 (2 (3) (4)) (5 (6)))} is a well-formed tree, with structure that could be visualized as:
+
+@examples[
+    #:eval tree-layout-eval
+	#:result-only
+	(naive-layered #:x-spacing 36 (tree-layout #:pict (text "1" null 18)
+                                    (tree-layout #:pict (text "2" null 18)
+                                      (tree-layout #:pict (text "3" null 18))
+                                      (tree-layout #:pict (text "4" null 18)))
+                                    (tree-layout #:pict (text "5" null 18)
+                                      (tree-layout #:pict (text "6" null 18)))))
+  ]
 
 @defproc[(make-tree [f (-> any/c sequence?)]
 					[node any/c])
