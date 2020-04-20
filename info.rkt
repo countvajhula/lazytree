@@ -11,6 +11,7 @@
                      "rackunit-lib"
                      "pict-lib"
                      "sandbox-lib"))
+(define compile-omit-paths '("dev"))
 (define clean '("compiled" "doc"))
 (define pkg-desc "Lightweight, lazy trees.")
 (define version "0.0")
