@@ -14,5 +14,5 @@
 (define compile-omit-paths '("dev"))
 (define clean '("compiled" "doc"))
 (define pkg-desc "Lightweight, lazy trees.")
-(define version "0.0")
+(define version "1.0")
 (define pkg-authors '(countvajhula))
