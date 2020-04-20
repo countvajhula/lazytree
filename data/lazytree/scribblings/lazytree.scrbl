@@ -34,7 +34,7 @@
 @(tree-layout-eval '(require pict/tree-layout pict))
 @(tree-layout-eval '(define node-pict (circle 15 #:border-width 2)))
 
-@title{Lightweight Lazy Trees}
+@title{Lightweight, Lazy Trees}
 @author{Siddhartha Kasivajhula}
 
 @defmodule[data/lazytree]

@@ -9,6 +9,7 @@
                      "collections-doc"
                      "functional-doc"
                      "rackunit-lib"
+                     "pict-lib"
                      "sandbox-lib"))
 (define clean '("compiled" "doc"))
 (define pkg-desc "Lightweight, lazy trees.")
