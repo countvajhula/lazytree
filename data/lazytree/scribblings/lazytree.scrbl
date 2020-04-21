@@ -16,7 +16,8 @@
                     (only-in relation
                              fold
                              ->list
-                             /=)]]
+                             /=
+                             ..)]]
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
