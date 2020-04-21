@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
-		 pict/private/layout
+         pict/private/layout
          @for-label[data/lazytree
                     (except-in racket
                                map
@@ -13,8 +13,10 @@
                              map
                              filter
                              sequence?)
-					(only-in relation
-                             fold)]]
+                    (only-in relation
+                             fold
+                             ->list
+                             /=)]]
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -26,9 +28,9 @@
                                                       index-of
                                                       foldl
                                                       foldl/steps))
-				                 '(require relation)
-								 '(require data/lazytree)
-								 '(require racket/stream))))
+                                 '(require relation)
+                                 '(require data/lazytree)
+                                 '(require racket/stream))))
 
 @(define tree-layout-eval (make-base-eval))
 @(tree-layout-eval '(require pict/tree-layout pict))
@@ -55,17 +57,17 @@ This module provides utilities to leverage the natural hierarchical structure of
   ]
 
 @defproc[(make-tree [f (-> any/c sequence?)]
-					[node any/c])
+                    [node any/c])
          sequence?]{
 
   Construct a tree from a node (which could be any value) and a function @racket[f] that yields the next level of the hierarchy (i.e. "children" or "parents") given an input node. The function @racket[f] is recursively -- and lazily -- applied starting from @racket[node] to yield a stream exhibiting the canonical tree structure.
 
 @examples[
     #:eval eval-for-docs
-	(struct taxon (name children))
-	(define dog (taxon "Dog" '()))
-	(define cat (taxon "Cat" '()))
-	(define mammal (taxon "Mammal" (list dog cat)))
+    (struct taxon (name children))
+    (define dog (taxon "Dog" '()))
+    (define cat (taxon "Cat" '()))
+    (define mammal (taxon "Mammal" (list dog cat)))
     (->list (tree-traverse (make-tree taxon-children mammal)))
   ]
 }
@@ -85,11 +87,11 @@ This module provides utilities to leverage the natural hierarchical structure of
     (->list (tree-traverse #:order 'post t))
     (->list (tree-traverse #:order 'in t))
     (->list (tree-traverse #:order 'level t))
-	(struct taxon (name children))
-	(define dog (taxon "Dog" '()))
-	(define cat (taxon "Cat" '()))
-	(define mammal (taxon "Mammal" (list dog cat)))
-	(define t (make-tree taxon-children mammal))
+    (struct taxon (name children))
+    (define dog (taxon "Dog" '()))
+    (define cat (taxon "Cat" '()))
+    (define mammal (taxon "Mammal" (list dog cat)))
+    (define t (make-tree taxon-children mammal))
     (->list (map taxon-name (tree-traverse #:order 'pre t)))
     (->list (map taxon-name (tree-traverse #:order 'post t)))
     (->list (map taxon-name (tree-traverse #:order 'in t)))
@@ -106,10 +108,10 @@ This module provides utilities to leverage the natural hierarchical structure of
 
 @examples[
     #:eval eval-for-docs
-	(struct taxon (name children))
-	(define dog (taxon "Dog" '()))
-	(define cat (taxon "Cat" '()))
-	(define mammal (taxon "Mammal" (list dog cat)))
+    (struct taxon (name children))
+    (define dog (taxon "Dog" '()))
+    (define cat (taxon "Cat" '()))
+    (define mammal (taxon "Mammal" (list dog cat)))
     (define t (make-tree taxon-children mammal))
     (first (tree-map taxon-name t))
   ]
@@ -123,10 +125,10 @@ This module provides utilities to leverage the natural hierarchical structure of
 
 @examples[
     #:eval eval-for-docs
-	(struct taxon (name children))
-	(define dog (taxon "Dog" '()))
-	(define cat (taxon "Cat" '()))
-	(define mammal (taxon "Mammal" (list dog cat)))
+    (struct taxon (name children))
+    (define dog (taxon "Dog" '()))
+    (define cat (taxon "Cat" '()))
+    (define mammal (taxon "Mammal" (list dog cat)))
     (define t (make-tree taxon-children mammal))
     (->list (tree-traverse (tree-map taxon-name (tree-filter (lambda (v) (/= (taxon-name v) "Dog")) t))))
   ]
@@ -145,10 +147,10 @@ This module provides utilities to leverage the natural hierarchical structure of
 
 @examples[
     #:eval eval-for-docs
-	(struct taxon (name children))
-	(define dog (taxon "Dog" '()))
-	(define cat (taxon "Cat" '()))
-	(define mammal (taxon "Mammal" (list dog cat)))
+    (struct taxon (name children))
+    (define dog (taxon "Dog" '()))
+    (define cat (taxon "Cat" '()))
+    (define mammal (taxon "Mammal" (list dog cat)))
     (define t (make-tree taxon-children mammal))
     (tree-fold (lambda (x xs) (.. (taxon-name x) xs)) t "")
     (tree-fold #:order 'post (lambda (x xs) (.. (taxon-name x) xs)) t "")
