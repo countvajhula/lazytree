@@ -5,7 +5,6 @@
          racket/generic
          racket/undefined
          racket/set
-         racket/function
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -13,10 +12,7 @@
                     index-of)
          (only-in data/collection
                   (append d:append))
-         relation/equivalence
-         relation/order
-         relation/transform
-         relation/algebraic)
+         relation)
 
 (provide (contract-out
           [make-tree (-> (-> any/c sequence?)
@@ -59,13 +55,6 @@
                       append
                       index-of)
            relation))
-
-(define || disjoin)
-(define !! negate)
-
-(define (unthunk f . args)
-  (λ ignored-args
-    (apply f args)))
 
 (define (~remove-when #:how-many [how-many #f]
                       pred
