@@ -61,7 +61,7 @@ This module provides utilities to leverage the natural hierarchical structure of
                     [node any/c])
          sequence?]{
 
-  Construct a tree from a node (which could be any value) and a function @racket[f] that yields the next level of the hierarchy (i.e. "children" or "parents") given an input node. The function @racket[f] is recursively -- and lazily -- applied starting from @racket[node] to yield a stream exhibiting the canonical tree structure.
+  Construct a tree from a node (which could be any value) and a function @racket[f] that yields the next level of the hierarchy (i.e. "children" or "parents") given an input node. The function @racket[f] is recursively -- and lazily -- applied starting from @racket[node] to yield a stream exhibiting the canonical tree structure. The "data" contained in the tree are @emph{the provided node objects themselves} (whatever they may be). If you'd prefer it to be something else, that can be accomplished by mapping the resulting tree using @racket[tree-map].
 
 @examples[
     #:eval eval-for-docs
