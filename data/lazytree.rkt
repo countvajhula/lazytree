@@ -4,6 +4,9 @@
          racket/stream
          racket/generic
          racket/undefined
+         (only-in racket/function
+                  identity
+                  thunk)
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -16,9 +19,11 @@
 (require "private/util.rkt")
 
 (provide (contract-out
-          [make-tree (-> (-> any/c sequence?)
-                         any/c
-                         sequence?)]
+          [make-tree (->* ((-> any/c sequence?)
+                           any/c)
+                          (#:with-data procedure?
+                           #:empty-tree (-> any/c boolean?))
+                          sequence?)]
           [tree-traverse (->* (sequence?)
                               (#:order (one-of/c 'pre
                                                  'post
@@ -56,10 +61,18 @@
                       index-of)
            relation))
 
-(define (make-tree f node)
-  (stream-cons node
-               (map (curry make-tree f)
-                    (f node))))
+(define (make-tree f
+                   node
+                   #:with-data [dataf identity]
+                   #:empty-tree [empty-tree? false.])
+  (if (empty-tree? node)
+      empty-stream
+      (stream-cons (dataf node)
+                   (map (curry make-tree
+                               f
+                               #:with-data dataf
+                               #:empty-tree empty-tree?)
+                        (f node)))))
 
 (define (tree-map f tree)
   (if (empty? tree)
@@ -259,4 +272,33 @@
     (check-equal? (->list (tree-fold + t #:order 'in #:with-steps? #t))
                   (list 0 3 5 9 10 16 21 28 38 47 58 66 79 91 105))
     (check-equal? (->list (tree-fold + t #:order 'level #:with-steps? #t))
-                  (list 0 1 3 8 16 19 23 29 36 45 57 67 78 91 105))))
+                  (list 0 1 3 8 16 19 23 29 36 45 57 67 78 91 105)))
+  (test-case
+      "Tree with sentinel empty nodes"
+    (struct node (data left right))
+    (struct empty-tree ())
+    (define (node-children t)
+      (list (node-left t)
+            (node-right t)))
+    (define tree (node 1
+                       (node 2
+                             (node 3
+                                   (empty-tree)
+                                   (empty-tree))
+                             (node 4
+                                   (empty-tree)
+                                   (empty-tree)))
+                       (node 5
+                             (node 6
+                                   (empty-tree)
+                                   (empty-tree))
+                             (empty-tree))))
+    (let ([t (make-tree node-children
+                        tree
+                        #:empty-tree empty-tree?)])
+      (check-equal? (tree-fold + (tree-map node-data t)) 21))
+    (let ([t (make-tree node-children
+                        tree
+                        #:empty-tree empty-tree?
+                        #:with-data node-data)])
+      (check-equal? (tree-fold + t) 21))))
