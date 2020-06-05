@@ -2,7 +2,7 @@
 (define collection 'multi)
 (define deps '("base"
                "collections-lib"
-               "Relation"))
+               "relation"))
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
