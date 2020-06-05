@@ -4,7 +4,6 @@
          racket/stream
          racket/generic
          racket/undefined
-         racket/set
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -13,6 +12,8 @@
          (only-in data/collection
                   (append d:append))
          relation)
+
+(require "private/util.rkt")
 
 (provide (contract-out
           [make-tree (-> (-> any/c sequence?)
@@ -46,7 +47,6 @@
 (module+ test
   (require rackunit
            racket/stream
-           racket/set
            (only-in racket/function
                     thunk)
            (except-in data/collection
@@ -55,40 +55,6 @@
                       append
                       index-of)
            relation))
-
-(define (~remove-when #:how-many [how-many #f]
-                      pred
-                      seq)
-  (if ((|| set? gset?) seq)
-      (raise-argument-error 'remove-when
-                            "sequence? that is not a pure set"
-                            seq)
-      (if (empty? seq)
-          seq
-          (if how-many
-              (if (> how-many 0)
-                  (let ([v (first seq)]
-                        [vs (rest seq)])
-                    (if (pred v)
-                        (~remove-when #:how-many (sub1 how-many)
-                                      pred
-                                      (rest seq))
-                        (stream-cons v
-                                     (~remove-when #:how-many how-many
-                                                   pred
-                                                   (rest seq)))))
-                  seq)
-              (filter (!! pred) seq)))))
-
-(define (remove-when #:how-many [how-many #f]
-                     pred
-                     seq)
-  (let ([result (~remove-when #:how-many how-many
-                              pred
-                              seq)])
-    (if (string? seq)
-        (->string result)
-        result)))
 
 (define (make-tree f node)
   (stream-cons node
