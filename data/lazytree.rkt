@@ -155,11 +155,13 @@
         (if (empty? queue)
             (stream)
             (let ([current (first queue)])
-              (stream-cons (first current)
-                           (loop (d:append (rest queue)
-                                           (if converse?
-                                               (reverse (rest current))
-                                               (rest current))))))))))
+              (if (empty? current)
+                  (loop (rest queue))
+                  (stream-cons (first current)
+                               (loop (d:append (rest queue)
+                                               (if converse?
+                                                   (reverse (rest current))
+                                                   (rest current)))))))))))
 
 (define (tree-traverse tree
                        #:order [order 'pre]
@@ -283,22 +285,34 @@
     (define tree (node 1
                        (node 2
                              (node 3
-                                   (empty-tree)
+                                   (node 4
+                                         (empty-tree)
+                                         (empty-tree))
                                    (empty-tree))
-                             (node 4
+                             (node 5
                                    (empty-tree)
-                                   (empty-tree)))
-                       (node 5
-                             (node 6
+                                   (node 6
+                                         (empty-tree)
+                                         (empty-tree))))
+                       (node 7
+                             (node 8
                                    (empty-tree)
                                    (empty-tree))
                              (empty-tree))))
     (let ([t (make-tree node-children
                         tree
                         #:empty-tree empty-tree?)])
-      (check-equal? (tree-fold + (tree-map node-data t)) 21))
+      (check-equal? (tree-fold + (tree-map node-data t)) 36))
     (let ([t (make-tree node-children
                         tree
                         #:empty-tree empty-tree?
                         #:with-data node-data)])
-      (check-equal? (tree-fold + t) 21))))
+      (check-equal? (tree-fold + t) 36)
+      (check-equal? (->list (tree-traverse t #:order 'pre)) (list 1 2 3 4 5 6 7 8))
+      (check-equal? (->list (tree-traverse t #:order 'pre #:converse? #t)) (list 1 7 8 2 5 6 3 4))
+      (check-equal? (->list (tree-traverse t #:order 'post)) (list 4 3 6 5 2 8 7 1))
+      (check-equal? (->list (tree-traverse t #:order 'post #:converse? #t)) (list 8 7 6 5 4 3 2 1))
+      (check-equal? (->list (tree-traverse t #:order 'in)) (list 4 3 2 5 6 1 8 7))
+      (check-equal? (->list (tree-traverse t #:order 'in #:converse? #t)) (list 7 8 1 6 5 2 3 4))
+      (check-equal? (->list (tree-traverse t #:order 'level)) (list 1 2 7 3 5 8 4 6))
+      (check-equal? (->list (tree-traverse t #:order 'level #:converse? #t)) (list 1 7 2 8 5 3 6 4)))))
