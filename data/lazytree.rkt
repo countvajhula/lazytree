@@ -269,8 +269,8 @@
                     (list 5 1 1 1 2 2 2))
       (check-equal? (->list (tree-traverse (tree-map add1 t)))
                     (list 2 3 4 5 6 7 8 9 10 11 12 13 14 15))
-      (check-equal? (->list (tree-traverse (tree-filter (curryr < 7) t)))
-                    (list 1 2 3 4 5 6))
+      (check-equal? (->list (tree-traverse (tree-filter odd? t)))
+                    (list 1 5 7))
       (check-equal? (tree-fold + t) 105)
       (check-equal? (tree-fold + t 1) 106)
       (check-equal? (->list (tree-fold + t #:order 'pre #:with-steps? #t))
@@ -283,6 +283,68 @@
                     (list 0 3 5 9 10 16 21 28 38 47 58 66 79 91 105))
       (check-equal? (->list (tree-fold + t #:order 'level #:with-steps? #t))
                     (list 0 1 3 8 16 19 23 29 36 45 57 67 78 91 105)))
+
+  (test-case
+      "Empty non-list-formatted tree instance"
+    (struct node (data left right))
+    (struct empty-tree ())
+    (define (node-children t)
+      (list (node-left t)
+            (node-right t)))
+    (define tree (empty-tree))
+    (let ([t (make-tree node-children
+                        tree
+                        #:empty-tree empty-tree?)])
+      (check-equal? (tree-fold + (tree-map node-data t)) ID))
+    (let ([t (make-tree node-children
+                        tree
+                        #:empty-tree empty-tree?
+                        #:with-data node-data)])
+      (check-equal? (tree-fold + t) ID)
+      (check-equal? (->list (tree-traverse t #:order 'pre)) (list))
+      (check-equal? (->list (tree-traverse t #:order 'pre #:converse? #t)) (list))
+      (check-equal? (->list (tree-traverse t #:order 'post)) (list))
+      (check-equal? (->list (tree-traverse t #:order 'post #:converse? #t)) (list))
+      (check-equal? (->list (tree-traverse t #:order 'in)) (list))
+      (check-equal? (->list (tree-traverse t #:order 'in #:converse? #t)) (list))
+      (check-equal? (->list (tree-traverse t #:order 'level)) (list))
+      (check-equal? (->list (tree-traverse t #:order 'level #:converse? #t)) (list))
+      (check-equal? (->list (tree-traverse (tree-map add1 t)))
+                    (list))
+      (check-equal? (->list (tree-traverse (tree-filter (curryr < 7) t)))
+                    (list))))
+
+  (test-case
+      "Leaf non-list-formatted tree instance"
+    (struct node (data left right))
+    (struct empty-tree ())
+    (define (node-children t)
+      (list (node-left t)
+            (node-right t)))
+    (define tree (node 1
+                       (empty-tree)
+                       (empty-tree)))
+    (let ([t (make-tree node-children
+                        tree
+                        #:empty-tree empty-tree?)])
+      (check-equal? (tree-fold + (tree-map node-data t)) 1))
+    (let ([t (make-tree node-children
+                        tree
+                        #:empty-tree empty-tree?
+                        #:with-data node-data)])
+      (check-equal? (tree-fold + t) 1)
+      (check-equal? (->list (tree-traverse t #:order 'pre)) (list 1))
+      (check-equal? (->list (tree-traverse t #:order 'pre #:converse? #t)) (list 1))
+      (check-equal? (->list (tree-traverse t #:order 'post)) (list 1))
+      (check-equal? (->list (tree-traverse t #:order 'post #:converse? #t)) (list 1))
+      (check-equal? (->list (tree-traverse t #:order 'in)) (list 1))
+      (check-equal? (->list (tree-traverse t #:order 'in #:converse? #t)) (list 1))
+      (check-equal? (->list (tree-traverse t #:order 'level)) (list 1))
+      (check-equal? (->list (tree-traverse t #:order 'level #:converse? #t)) (list 1))
+      (check-equal? (->list (tree-traverse (tree-map add1 t)))
+                    (list 2))
+      (check-equal? (->list (tree-traverse (tree-filter (curryr < 7) t)))
+                    (list 1))))
 
   (test-case
       "Tree with sentinel empty nodes"
@@ -324,4 +386,8 @@
       (check-equal? (->list (tree-traverse t #:order 'in)) (list 4 3 2 5 6 1 8 7))
       (check-equal? (->list (tree-traverse t #:order 'in #:converse? #t)) (list 7 8 1 6 5 2 3 4))
       (check-equal? (->list (tree-traverse t #:order 'level)) (list 1 2 7 3 5 8 4 6))
-      (check-equal? (->list (tree-traverse t #:order 'level #:converse? #t)) (list 1 7 2 8 5 3 6 4)))))
+      (check-equal? (->list (tree-traverse t #:order 'level #:converse? #t)) (list 1 7 2 8 5 3 6 4))
+      (check-equal? (->list (tree-traverse (tree-map add1 t)))
+                    (list 2 3 4 5 6 7 8 9))
+      (check-equal? (->list (tree-traverse (tree-filter odd? t)))
+                    (list 1 7)))))
