@@ -24,6 +24,10 @@
                           (#:with-data procedure?
                            #:empty-tree (-> any/c boolean?))
                           sequence?)]
+          [export-tree (->* (procedure?
+                             sequence?)
+                            (#:empty-cons (-> any/c))
+                            any/c)]
           [tree-traverse (->* (sequence?)
                               (#:order (one-of/c 'pre
                                                  'post
@@ -65,6 +69,8 @@
                    node
                    #:with-data [dataf identity]
                    #:empty-tree [empty-tree? false.])
+  ;; lazily derive a tree in the canonical format
+  ;; T = (data child ...) from the source format
   (if (empty-tree? node)
       empty-stream
       (stream-cons (dataf node)
@@ -73,6 +79,19 @@
                                #:with-data dataf
                                #:empty-tree empty-tree?)
                         (f node)))))
+
+(define (export-tree f
+                     tree
+                     #:empty-cons [empty-cons (thunk '())])
+  ;; export (data child ...) to the source format
+  (if (empty? tree)
+      (empty-cons) ; not used if tree-cons is list-like
+      (apply f
+             (first tree)
+             (map (curry export-tree
+                         f
+                         #:empty-cons empty-cons)
+                  (rest tree)))))
 
 (define (tree-map f tree)
   (if (empty? tree)
@@ -206,7 +225,22 @@
                   (list))
     (check-equal? (->list (tree-traverse (tree-filter (curryr < 7) t)))
                   (list))
-    (check-equal? (tree-fold + t) ID))
+    (check-equal? (tree-fold + t) ID)
+    (check-equal? (->list
+                   (tree-traverse
+                    (make-tree rest
+                               t
+                               #:empty-tree empty?
+                               #:with-data first)))
+                  (->list (tree-traverse t))
+                  "idempotence for list-formatted tree")
+    (check-equal? (export-tree list
+                               (make-tree rest
+                                          t
+                                          #:empty-tree empty?
+                                          #:with-data first))
+                  t
+                  "isomorphic representation (sanity)"))
 
   (test-case
       "Leaf list-formatted tree"
@@ -231,7 +265,21 @@
                   (list 2))
     (check-equal? (->list (tree-traverse (tree-filter (curryr < 7) t)))
                   (list 1))
-    (check-equal? (tree-fold + t) 1))
+    (check-equal? (tree-fold + t) 1)
+    (check-equal? (->list
+                   (tree-traverse
+                    (make-tree rest
+                               t
+                               #:empty-tree empty?
+                               #:with-data first)))
+                  (->list (tree-traverse t))
+                  "idempotence for list-formatted tree")
+    (check-equal? (export-tree list
+                               (make-tree rest
+                                          t
+                                          #:with-data first))
+                  t
+                  "isomorphic representation (sanity)"))
 
   (test-case
       "List-formatted numeric tree"
@@ -282,12 +330,28 @@
       (check-equal? (->list (tree-fold + t #:order 'in #:with-steps? #t))
                     (list 0 3 5 9 10 16 21 28 38 47 58 66 79 91 105))
       (check-equal? (->list (tree-fold + t #:order 'level #:with-steps? #t))
-                    (list 0 1 3 8 16 19 23 29 36 45 57 67 78 91 105)))
+                    (list 0 1 3 8 16 19 23 29 36 45 57 67 78 91 105))
+      (check-equal? (->list
+                     (tree-traverse
+                      (make-tree rest
+                                 t
+                                 #:empty-tree empty?
+                                 #:with-data first)))
+                    (->list (tree-traverse t))
+                    "idempotence for list-formatted tree")
+      (check-equal? (export-tree list
+                                 (make-tree rest
+                                            t
+                                            #:with-data first))
+                    t
+                    "isomorphic representation (sanity)"))
 
   (test-case
       "Empty non-list-formatted tree instance"
-    (struct node (data left right))
-    (struct empty-tree ())
+    (struct node (data left right)
+      #:transparent)
+    (struct empty-tree ()
+      #:transparent)
     (define (node-children t)
       (list (node-left t)
             (node-right t)))
@@ -312,12 +376,22 @@
       (check-equal? (->list (tree-traverse (tree-map add1 t)))
                     (list))
       (check-equal? (->list (tree-traverse (tree-filter (curryr < 7) t)))
-                    (list))))
+                    (list)))
+    (check-equal? (export-tree node
+                               (make-tree node-children
+                                          tree
+                                          #:empty-tree empty-tree?
+                                          #:with-data node-data)
+                               #:empty-cons empty-tree)
+                  tree
+                  "isomorphic representation (sanity)"))
 
   (test-case
       "Leaf non-list-formatted tree instance"
-    (struct node (data left right))
-    (struct empty-tree ())
+    (struct node (data left right)
+      #:transparent)
+    (struct empty-tree ()
+      #:transparent)
     (define (node-children t)
       (list (node-left t)
             (node-right t)))
@@ -344,12 +418,22 @@
       (check-equal? (->list (tree-traverse (tree-map add1 t)))
                     (list 2))
       (check-equal? (->list (tree-traverse (tree-filter (curryr < 7) t)))
-                    (list 1))))
+                    (list 1)))
+    (check-equal? (export-tree node
+                               (make-tree node-children
+                                          tree
+                                          #:empty-tree empty-tree?
+                                          #:with-data node-data)
+                               #:empty-cons empty-tree)
+                  tree
+                  "isomorphic representation (sanity)"))
 
   (test-case
       "Tree with sentinel empty nodes"
-    (struct node (data left right))
-    (struct empty-tree ())
+    (struct node (data left right)
+      #:transparent)
+    (struct empty-tree ()
+      #:transparent)
     (define (node-children t)
       (list (node-left t)
             (node-right t)))
@@ -390,4 +474,12 @@
       (check-equal? (->list (tree-traverse (tree-map add1 t)))
                     (list 2 3 4 5 6 7 8 9))
       (check-equal? (->list (tree-traverse (tree-filter odd? t)))
-                    (list 1 7)))))
+                    (list 1 7)))
+    (check-equal? (export-tree node
+                               (make-tree node-children
+                                          tree
+                                          #:empty-tree empty-tree?
+                                          #:with-data node-data)
+                               #:empty-cons empty-tree)
+                  tree
+                  "isomorphic representation (sanity)")))
