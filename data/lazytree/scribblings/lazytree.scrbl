@@ -15,6 +15,7 @@
                              sequence?)
                     (only-in relation
                              fold
+                             false.
                              ->list
                              /=
                              ..)]]
@@ -24,14 +25,15 @@
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
-                                 '(require (except-in data/collection
+                                 '(require racket/math
+                                           (except-in data/collection
                                                       append
                                                       index-of
                                                       foldl
-                                                      foldl/steps))
-                                 '(require relation)
-                                 '(require data/lazytree)
-                                 '(require racket/stream))))
+                                                      foldl/steps)
+                                           relation
+                                           data/lazytree
+                                           racket/stream))))
 
 @(define tree-layout-eval (make-base-eval))
 @(tree-layout-eval '(require pict/tree-layout pict))
@@ -81,10 +83,10 @@ Trees of this schema may be translated to any format (such as the original sourc
     (define dog (taxon "Dog" '()))
     (define cat (taxon "Cat" '()))
     (define mammal (taxon "Mammal" (list dog cat)))
-    (->list (tree-traverse (make-tree taxon-children mammal)))
-    (->list (tree-traverse (make-tree taxon-children
-                                      mammal
-                                      #:with-data taxon-name)))
+    (export-tree list (make-tree taxon-children mammal))
+    (export-tree list (make-tree taxon-children
+                                 mammal
+                                 #:with-data taxon-name))
   ]
 }
 
@@ -107,12 +109,14 @@ Trees of this schema may be translated to any format (such as the original sourc
     (define dog (taxon "Dog" '()))
     (define cat (taxon "Cat" '()))
     (define mammal (taxon "Mammal" (list dog cat)))
-    (define t (make-tree taxon-children mammal))
-    (->list (map taxon-name (tree-traverse #:order 'pre t)))
-    (->list (map taxon-name (tree-traverse #:order 'post t)))
-    (->list (map taxon-name (tree-traverse #:order 'in t)))
-    (->list (map taxon-name (tree-traverse #:order 'level t)))
-    (->list (map taxon-name (tree-traverse #:converse? #t #:order 'pre t)))
+    (define t (make-tree taxon-children
+                         mammal
+                         #:with-data taxon-name))
+    (->list (tree-traverse #:order 'pre t))
+    (->list (tree-traverse #:order 'post t))
+    (->list (tree-traverse #:order 'in t))
+    (->list (tree-traverse #:order 'level t))
+    (->list (tree-traverse #:converse? #t #:order 'pre t))
   ]
 }
 
@@ -124,12 +128,14 @@ Trees of this schema may be translated to any format (such as the original sourc
 
 @examples[
     #:eval eval-for-docs
+    (define t '(1 (2 (3) (4)) (5 (6))))
+    (export-tree list (tree-map sqr t))
     (struct taxon (name children))
     (define dog (taxon "Dog" '()))
     (define cat (taxon "Cat" '()))
     (define mammal (taxon "Mammal" (list dog cat)))
     (define t (make-tree taxon-children mammal))
-    (first (tree-map taxon-name t))
+    (export-tree list (tree-map taxon-name t))
   ]
 }
 
@@ -145,13 +151,13 @@ Trees of this schema may be translated to any format (such as the original sourc
     (define dog (taxon "Dog" '()))
     (define cat (taxon "Cat" '()))
     (define mammal (taxon "Mammal" (list dog cat)))
-    (define t (make-tree taxon-children mammal))
-    (->list (tree-traverse
-              (tree-map taxon-name
-                        (tree-filter (lambda (v)
-                                       (/= (taxon-name v)
-                                           "Dog"))
-                                     t))))
+    (define t (make-tree taxon-children
+                         mammal
+                         #:with-data taxon-name))
+    (export-tree list
+                 (tree-filter (lambda (v)
+                                (/= v "Dog"))
+                              t))
   ]
 }
 
@@ -172,16 +178,11 @@ Trees of this schema may be translated to any format (such as the original sourc
     (define dog (taxon "Dog" '()))
     (define cat (taxon "Cat" '()))
     (define mammal (taxon "Mammal" (list dog cat)))
-    (define t (make-tree taxon-children mammal))
-    (tree-fold (lambda (x xs)
-                 (.. (taxon-name x) xs))
-               t
-               "")
-    (tree-fold #:order 'post
-               (lambda (x xs)
-                 (.. (taxon-name x) xs))
-               t
-               "")
+    (define t (make-tree taxon-children
+                         mammal
+                         #:with-data taxon-name))
+    (tree-fold .. t)
+    (tree-fold #:order 'post .. t)
   ]
 }
 
