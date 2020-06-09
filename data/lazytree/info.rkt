@@ -1,2 +1,2 @@
 #lang info
-(define scribblings '(("scribblings/lazytree.scrbl" (multi-page))))
+(define scribblings '(("scribblings/lazytree.scrbl" ())))
