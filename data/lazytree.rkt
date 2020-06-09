@@ -2,11 +2,9 @@
 
 (require racket/contract/base
          racket/stream
-         racket/generic
          racket/undefined
          (only-in racket/function
-                  identity
-                  thunk)
+                  identity)
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -22,7 +20,7 @@
           [make-tree (->* ((-> any/c sequence?)
                            any/c)
                           (#:with-data procedure?
-                           #:empty-tree (-> any/c boolean?))
+                           #:empty-pred (-> any/c boolean?))
                           sequence?)]
           [export-tree (->* (procedure?
                              sequence?)
@@ -56,8 +54,6 @@
 (module+ test
   (require rackunit
            racket/stream
-           (only-in racket/function
-                    thunk)
            (except-in data/collection
                       foldl
                       foldl/steps
@@ -68,30 +64,33 @@
 (define (make-tree f
                    node
                    #:with-data [dataf identity]
-                   #:empty-tree [empty-tree? false.])
+                   #:empty-pred [empty-pred false.])
   ;; lazily derive a tree in the canonical format
   ;; T = (data child ...) from the source format
-  (if (empty-tree? node)
+  (if (empty-pred node)
       empty-stream
       (stream-cons (dataf node)
                    (map (curry make-tree
                                f
                                #:with-data dataf
-                               #:empty-tree empty-tree?)
+                               #:empty-pred empty-pred)
                         (f node)))))
 
 (define (export-tree f
                      tree
-                     #:empty-cons [empty-cons (thunk '())])
+                     #:empty-cons [empty-cons #f])
   ;; export (data child ...) to the source format
   (if (empty? tree)
-      (empty-cons) ; not used if tree-cons is list-like
+      (if empty-cons (empty-cons) '())
       (apply f
              (first tree)
-             (map (curry export-tree
-                         f
-                         #:empty-cons empty-cons)
-                  (rest tree)))))
+             (filter (if empty-cons
+                         true.
+                         (!! null?))
+                     (map (curry export-tree
+                                 f
+                                 #:empty-cons empty-cons)
+                          (rest tree))))))
 
 (define (tree-map f tree)
   (if (empty? tree)
@@ -230,14 +229,14 @@
                    (tree-traverse
                     (make-tree rest
                                t
-                               #:empty-tree empty?
+                               #:empty-pred empty?
                                #:with-data first)))
                   (->list (tree-traverse t))
                   "idempotence for list-formatted tree")
     (check-equal? (export-tree list
                                (make-tree rest
                                           t
-                                          #:empty-tree empty?
+                                          #:empty-pred empty?
                                           #:with-data first))
                   t
                   "isomorphic representation (sanity)"))
@@ -270,7 +269,7 @@
                    (tree-traverse
                     (make-tree rest
                                t
-                               #:empty-tree empty?
+                               #:empty-pred empty?
                                #:with-data first)))
                   (->list (tree-traverse t))
                   "idempotence for list-formatted tree")
@@ -335,7 +334,7 @@
                      (tree-traverse
                       (make-tree rest
                                  t
-                                 #:empty-tree empty?
+                                 #:empty-pred empty?
                                  #:with-data first)))
                     (->list (tree-traverse t))
                     "idempotence for list-formatted tree")
@@ -358,11 +357,11 @@
     (define tree (empty-tree))
     (let ([t (make-tree node-children
                         tree
-                        #:empty-tree empty-tree?)])
+                        #:empty-pred empty-tree?)])
       (check-equal? (tree-fold + (tree-map node-data t)) ID))
     (let ([t (make-tree node-children
                         tree
-                        #:empty-tree empty-tree?
+                        #:empty-pred empty-tree?
                         #:with-data node-data)])
       (check-equal? (tree-fold + t) ID)
       (check-equal? (->list (tree-traverse t #:order 'pre)) (list))
@@ -380,7 +379,7 @@
     (check-equal? (export-tree node
                                (make-tree node-children
                                           tree
-                                          #:empty-tree empty-tree?
+                                          #:empty-pred empty-tree?
                                           #:with-data node-data)
                                #:empty-cons empty-tree)
                   tree
@@ -400,11 +399,11 @@
                        (empty-tree)))
     (let ([t (make-tree node-children
                         tree
-                        #:empty-tree empty-tree?)])
+                        #:empty-pred empty-tree?)])
       (check-equal? (tree-fold + (tree-map node-data t)) 1))
     (let ([t (make-tree node-children
                         tree
-                        #:empty-tree empty-tree?
+                        #:empty-pred empty-tree?
                         #:with-data node-data)])
       (check-equal? (tree-fold + t) 1)
       (check-equal? (->list (tree-traverse t #:order 'pre)) (list 1))
@@ -422,7 +421,7 @@
     (check-equal? (export-tree node
                                (make-tree node-children
                                           tree
-                                          #:empty-tree empty-tree?
+                                          #:empty-pred empty-tree?
                                           #:with-data node-data)
                                #:empty-cons empty-tree)
                   tree
@@ -437,6 +436,8 @@
     (define (node-children t)
       (list (node-left t)
             (node-right t)))
+    (struct node-too (data children)
+      #:transparent)
     (define tree (node 1
                        (node 2
                              (node 3
@@ -456,11 +457,11 @@
                              (empty-tree))))
     (let ([t (make-tree node-children
                         tree
-                        #:empty-tree empty-tree?)])
+                        #:empty-pred empty-tree?)])
       (check-equal? (tree-fold + (tree-map node-data t)) 36))
     (let ([t (make-tree node-children
                         tree
-                        #:empty-tree empty-tree?
+                        #:empty-pred empty-tree?
                         #:with-data node-data)])
       (check-equal? (tree-fold + t) 36)
       (check-equal? (->list (tree-traverse t #:order 'pre)) (list 1 2 3 4 5 6 7 8))
@@ -474,11 +475,32 @@
       (check-equal? (->list (tree-traverse (tree-map add1 t)))
                     (list 2 3 4 5 6 7 8 9))
       (check-equal? (->list (tree-traverse (tree-filter odd? t)))
-                    (list 1 7)))
+                    (list 1 7))
+      (check-equal? (export-tree (λ tree
+                                   (node-too (first tree)
+                                             (rest tree)))
+                                 t)
+                    (node-too 1
+                              (list
+                               (node-too 2
+                                         (list
+                                          (node-too 3
+                                                    (list
+                                                     (node-too 4
+                                                               (list))))
+                                          (node-too 5
+                                                    (list
+                                                     (node-too 6
+                                                               (list))))))
+                               (node-too 7
+                                         (list
+                                          (node-too 8
+                                                    (list))))))
+                    "empty subtrees are eliminated"))
     (check-equal? (export-tree node
                                (make-tree node-children
                                           tree
-                                          #:empty-tree empty-tree?
+                                          #:empty-pred empty-tree?
                                           #:with-data node-data)
                                #:empty-cons empty-tree)
                   tree
