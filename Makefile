@@ -5,14 +5,16 @@ COLLECTION-NAME=data/lazytree
 DEPS-FLAGS=--check-pkg-deps --unused-pkg-deps
 
 help:
+	@echo "install - install package along with dependencies"
+	@echo "remove - remove package"
 	@echo "build - Compile libraries"
 	@echo "build-docs - Build docs"
 	@echo "build-all - Compile libraries, build docs, and check dependencies"
 	@echo "clean - remove all build artifacts"
-	@echo "install - install package along with dependencies"
-	@echo "remove - remove package"
 	@echo "check-deps - check dependencies"
 	@echo "test - run tests"
+	@echo "test-with-errortrace - run tests with error tracing"
+	@echo "errortrace - alias for test-with-errortrace"
 	@echo "docs - view docs in a browser"
 
 # Primarily for use by CI.
@@ -55,7 +57,12 @@ check-deps:
 test:
 	raco test -x -p $(PACKAGE-NAME)
 
+test-with-errortrace:
+	racket -l errortrace -t data/lazytree.rkt
+
+errortrace: test-with-errortrace
+
 docs:
 	raco docs $(COLLECTION-NAME)
 
-.PHONY:	help install remove build build-docs build-all clean check-deps test docs
+.PHONY:	help install remove build build-docs build-all clean check-deps test test-with-errortrace errortrace docs
