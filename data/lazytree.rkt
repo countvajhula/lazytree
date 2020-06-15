@@ -51,8 +51,9 @@
                            #:with-steps? boolean?)
                           any/c)]))
 
-(module+ ~test
+(module+ test
   (require rackunit
+           rackunit/text-ui
            racket/stream
            (except-in data/collection
                       foldl
@@ -199,9 +200,7 @@
         [else
          (error "Invalid traversal order!")]))
 
-(module+ ~test
-
-  (provide tests)
+(module+ test
 
   (define tests
     (test-suite
@@ -509,14 +508,6 @@
                                              #:with-data node-data)
                                   #:empty-cons empty-tree)
                      tree
-                     "isomorphic representation (sanity)")))))
+                     "isomorphic representation (sanity)"))))
 
-(module+ test
-  (require (submod ".." ~test)
-           rackunit/text-ui)
-  (run-tests tests))
-
-(module+ main
-  (require (submod ".." ~test)
-           rackunit/text-ui)
   (run-tests tests))

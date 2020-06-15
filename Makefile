@@ -58,7 +58,7 @@ test:
 	raco test -x -p $(PACKAGE-NAME)
 
 test-with-errortrace:
-	racket -l errortrace -t data/lazytree.rkt
+	racket -l errortrace -l racket -e '(require (submod "data/lazytree.rkt" test))'
 
 errortrace: test-with-errortrace
 
