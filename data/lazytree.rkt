@@ -508,6 +508,7 @@
                                              #:with-data node-data)
                                   #:empty-cons empty-tree)
                      tree
-                     "isomorphic representation (sanity)"))))
+                     "isomorphic representation (sanity)")))))
 
+(module+ test
   (run-tests tests))
