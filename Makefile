@@ -15,6 +15,7 @@ help:
 	@echo "test - run tests"
 	@echo "test-with-errortrace - run tests with error tracing"
 	@echo "errortrace - alias for test-with-errortrace"
+	@echo "cover - Check test coverage"
 	@echo "docs - view docs in a browser"
 
 # Primarily for use by CI.
@@ -65,4 +66,8 @@ errortrace: test-with-errortrace
 docs:
 	raco docs $(COLLECTION-NAME)
 
-.PHONY:	help install remove build build-docs build-all clean check-deps test test-with-errortrace errortrace docs
+cover:
+	raco cover -b -n dev -p $(PACKAGE-NAME)
+	open coverage/index.html
+
+.PHONY:	help install remove build build-docs build-all clean check-deps test test-with-errortrace errortrace docs cover
