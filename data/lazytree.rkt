@@ -95,20 +95,20 @@
 
 (define (tree-map f tree)
   (if (empty? tree)
-      (stream)
+      empty-stream
       (stream-cons (f (first tree))
                    (map (curry tree-map f)
                         (rest tree)))))
 
 (define (tree-filter f tree)
   (if (empty? tree)
-      (stream)
+      empty-stream
       (if (f (first tree))
           (stream-cons (first tree)
                        (remove-when empty?
                                     (map (curry tree-filter f)
                                          (rest tree))))
-          (stream))))
+          empty-stream)))
 
 (define (tree-fold f
                    tree
@@ -128,7 +128,7 @@
 (define (tree-traverse-preorder tree
                                 #:converse? [converse? #f])
   (if (empty? tree)
-      (stream)
+      empty-stream
       (stream-cons (first tree)
                    (apply d:append
                           (map (curry tree-traverse-preorder
@@ -140,7 +140,7 @@
 (define (tree-traverse-postorder tree
                                  #:converse? [converse? #f])
   (if (empty? tree)
-      (stream)
+      empty-stream
       (d:append (apply d:append
                        (map (curry tree-traverse-postorder
                                    #:converse? converse?)
@@ -152,7 +152,7 @@
 (define (tree-traverse-inorder tree
                                #:converse? [converse? #f])
   (if (empty? tree)
-      (stream)
+      empty-stream
       (if (empty? (rest tree))
           (stream (first tree))
           (let ([children (if converse?
@@ -169,10 +169,10 @@
 (define (tree-traverse-levelorder tree
                                   #:converse? [converse? #f])
   (if (empty? tree)
-      (stream)
+      empty-stream
       (let loop ([queue (list tree)])
         (if (empty? queue)
-            (stream)
+            empty-stream
             (let ([current (first queue)])
               (if (empty? current)
                   (loop (rest queue))
