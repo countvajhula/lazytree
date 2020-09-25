@@ -10,8 +10,6 @@
                     foldl/steps
                     append
                     index-of)
-         (only-in data/collection
-                  (append d:append))
          relation)
 
 (require "private/util.rkt")
@@ -130,24 +128,22 @@
   (if (empty? tree)
       empty-stream
       (stream-cons (first tree)
-                   (apply d:append
-                          (map (curry tree-traverse-preorder
-                                      #:converse? converse?)
-                               (if converse?
-                                   (reverse (rest tree))
-                                   (rest tree)))))))
+                   (join (map (curry tree-traverse-preorder
+                                     #:converse? converse?)
+                              (if converse?
+                                  (reverse (rest tree))
+                                  (rest tree)))))))
 
 (define (tree-traverse-postorder tree
                                  #:converse? [converse? #f])
   (if (empty? tree)
       empty-stream
-      (d:append (apply d:append
-                       (map (curry tree-traverse-postorder
-                                   #:converse? converse?)
-                            (if converse?
-                                (reverse (rest tree))
-                                (rest tree))))
-                (stream (first tree)))))
+      (.. (join (map (curry tree-traverse-postorder
+                            #:converse? converse?)
+                     (if converse?
+                         (reverse (rest tree))
+                         (rest tree))))
+          (stream (first tree)))))
 
 (define (tree-traverse-inorder tree
                                #:converse? [converse? #f])
@@ -158,7 +154,7 @@
           (let ([children (if converse?
                               (reverse (rest tree))
                               (rest tree))])
-            (apply d:append
+            (apply ..
                    (tree-traverse-inorder (first children)
                                           #:converse? converse?)
                    (stream (first tree))
@@ -177,10 +173,10 @@
               (if (empty? current)
                   (loop (rest queue))
                   (stream-cons (first current)
-                               (loop (d:append (rest queue)
-                                               (if converse?
-                                                   (reverse (rest current))
-                                                   (rest current)))))))))))
+                               (loop (.. (rest queue)
+                                         (if converse?
+                                             (reverse (rest current))
+                                             (rest current)))))))))))
 
 (define (tree-traverse tree
                        #:order [order 'pre]
