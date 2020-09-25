@@ -128,7 +128,7 @@
   (if (empty? tree)
       empty-stream
       (stream-cons (first tree)
-                   (->stream
+                   (->stream  ; handle `ID`
                     (join (map (curry tree-traverse-preorder
                                       #:converse? converse?)
                                (if converse?
