@@ -128,11 +128,12 @@
   (if (empty? tree)
       empty-stream
       (stream-cons (first tree)
-                   (join (map (curry tree-traverse-preorder
-                                     #:converse? converse?)
-                              (if converse?
-                                  (reverse (rest tree))
-                                  (rest tree)))))))
+                   (->stream
+                    (join (map (curry tree-traverse-preorder
+                                      #:converse? converse?)
+                               (if converse?
+                                   (reverse (rest tree))
+                                   (rest tree))))))))
 
 (define (tree-traverse-postorder tree
                                  #:converse? [converse? #f])
