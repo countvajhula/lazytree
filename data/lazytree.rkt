@@ -504,7 +504,31 @@
                                              #:with-data node-data)
                                   #:empty-cons empty-tree)
                      tree
-                     "isomorphic representation (sanity)")))))
+                     "isomorphic representation (sanity)"))
+     (test-case
+         "Infinite tree"
+       (let ([t (make-tree (λ (v) (list (add1 v)
+                                        ((power add1 2) v)
+                                        ((power add1 3) v)))
+                           1)])
+         (check-equal? (->list (take 10 (tree-traverse t #:order 'pre))) (list 1 2 3 4 5 6 7 8 9 10))
+         (check-equal? (->list (take 10 (tree-traverse t #:order 'pre #:converse? #t))) (list 1 4 7 10 13 16 19 22 25 28))
+         ;; can't do post- or in-order traversals since they start at the ends
+         (check-equal? (->list (take 10 (tree-traverse t #:order 'level))) (list 1 2 3 4 3 4 5 4 5 6))
+         (check-equal? (->list (take 10 (tree-traverse t #:order 'level #:converse? #t))) (list 1 4 3 2 7 6 5 6 5 4))
+         (check-equal? (->list (take 10 (tree-traverse (tree-map add1 t))))
+                       (list 2 3 4 5 6 7 8 9 10 11))
+         (check-equal? (->list (take 10 (tree-traverse (tree-filter odd? t))))
+                       (list 1 3 5 7 9 11 13 15 17 19))
+
+         (check-equal? (->list (take 10 (tree-fold + t #:order 'pre #:with-steps? #t)))
+                       (list 0 1 3 6 10 15 21 28 36 45))
+         (check-equal? (->list (take 10 (tree-fold + t #:order 'pre #:converse? #t #:with-steps? #t)))
+                       (list 0 1 5 12 22 35 51 70 92 117))
+         (check-equal? (->list (take 10 (tree-fold + t #:order 'level #:with-steps? #t)))
+                       (list 0 1 3 6 10 13 17 22 26 31))
+         (check-equal? (->list (take 10 (tree-fold + t #:order 'level #:converse? #t #:with-steps? #t)))
+                       (list 0 1 5 8 10 17 23 28 34 39)))))))
 
 (module+ test
   (run-tests tests))
