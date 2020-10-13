@@ -22,7 +22,7 @@
                           sequence?)]
           [export-tree (->* (procedure?
                              sequence?)
-                            (#:empty-cons (-> any/c))
+                            (#:empty-cons (or/c (-> any/c) #f))
                             any/c)]
           [tree-traverse (->* (sequence?)
                               (#:order (one-of/c 'pre
