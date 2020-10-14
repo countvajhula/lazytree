@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require racket/contract/base
+(require (except-in racket/contract/base
+                    predicate/c)
          racket/stream
          racket/undefined
          (only-in racket/function
@@ -10,19 +11,20 @@
                     foldl/steps
                     append
                     index-of)
+         contract/social
          relation)
 
 (require "private/util.rkt")
 
 (provide (contract-out
-          [make-tree (->* ((-> any/c sequence?)
+          [make-tree (->* ((function/c any/c sequence?)
                            any/c)
                           (#:with-data procedure?
-                           #:empty-pred (-> any/c boolean?))
+                           #:empty-pred (predicate/c))
                           sequence?)]
           [export-tree (->* (procedure?
                              sequence?)
-                            (#:empty-cons (or/c (-> any/c) #f))
+                            (#:empty-cons (maybe/c (thunk/c)))
                             any/c)]
           [tree-traverse (->* (sequence?)
                               (#:order (one-of/c 'pre
@@ -31,13 +33,9 @@
                                                  'level)
                                #:converse? boolean?)
                               sequence?)]
-          [tree-map (-> (-> any/c any/c)
-                        sequence?
-                        sequence?)]
-          [tree-filter (-> (-> any/c boolean?)
-                           sequence?
-                           sequence?)]
-          [tree-fold (->* ((-> any/c any/c any/c) sequence?)
+          [tree-map (map/c)]
+          [tree-filter (filter/c)]
+          [tree-fold (->* ((binary-composition/c any/c) sequence?)
                           (any/c
                            #:order (one-of/c 'pre
                                              'post

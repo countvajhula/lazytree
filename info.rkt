@@ -2,7 +2,8 @@
 (define collection 'multi)
 (define deps '("base"
                "collections-lib"
-               "relation"))
+               "relation"
+               "social-contract"))
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
