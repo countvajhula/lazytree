@@ -14,10 +14,10 @@
          contract/social
          relation)
 
-(require "private/util.rkt")
+(require "lazytree/private/util.rkt")
 
 (provide (contract-out
-          [make-tree (->* ((function/c any/c sequence?)
+          [make-tree (->* ((encoder/c sequence?)
                            any/c)
                           (#:with-data procedure?
                            #:empty-pred (predicate/c))
