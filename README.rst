@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/countvajhula/lazytree.svg?branch=master
-    :target: https://travis-ci.org/countvajhula/lazytree
+.. image:: https://github.com/countvajhula/lazytree/actions/workflows/test.yml/badge.svg
+    :target: https://github.com/countvajhula/lazytree/actions/workflows/test.yml
 
 .. image:: https://coveralls.io/repos/github/countvajhula/lazytree/badge.svg?branch=master
     :target: https://coveralls.io/github/countvajhula/lazytree?branch=master
