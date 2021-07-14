@@ -1,6 +1,7 @@
 # Adapted from: http://www.greghendershott.com/2017/04/racket-makefiles.html
 PACKAGE-NAME=lazytree
 COLLECTION-NAME=data/lazytree
+COLLECTION-ROOT=data
 
 DEPS-FLAGS=--check-pkg-deps --unused-pkg-deps
 
@@ -49,7 +50,7 @@ build-all:
 # (define clean '("compiled" "doc" "doc/<collect>")) to clean
 # generated docs, too.
 clean:
-	raco setup --fast-clean $(COLLECTION-NAME)
+	raco setup --fast-clean $(COLLECTION-ROOT) $(COLLECTION-NAME)
 
 # Primarily for use by CI, after make install -- since that already
 # does the equivalent of make setup, this tries to do as little as

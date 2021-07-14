@@ -18,6 +18,7 @@
 ;; for it to take effect, possibly because the tests are run against
 ;; the package rather than the collection
 (define test-omit-paths '("dev" "coverage"))
+(define clean '("data/compiled")) ; via --fast-clean --pkgs lazytree
 (define pkg-desc "Lightweight, lazy trees.")
 (define version "1.1")
 (define pkg-authors '(countvajhula))
