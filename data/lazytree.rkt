@@ -20,11 +20,11 @@
           [make-tree (->* ((encoder/c sequence?)
                            any/c)
                           (#:with-data procedure?
-                           #:empty-pred (predicate/c))
+                           #:empty-pred predicate/c)
                           sequence?)]
           [export-tree (->* (procedure?
                              sequence?)
-                            (#:empty-cons (maybe/c (thunk/c)))
+                            (#:empty-cons (maybe/c thunk/c))
                             any/c)]
           [tree-traverse (->* (sequence?)
                               (#:order (one-of/c 'pre
@@ -33,8 +33,8 @@
                                                  'level)
                                #:converse? boolean?)
                               sequence?)]
-          [tree-map (map/c)]
-          [tree-filter (filter/c)]
+          [tree-map map/c]
+          [tree-filter filter/c]
           [tree-fold (->* ((binary-composition/c any/c) sequence?)
                           (any/c
                            #:order (one-of/c 'pre
