@@ -33,7 +33,7 @@
                                                  'level)
                                #:converse? boolean?)
                               sequence?)]
-          [tree-map map/c]
+          [tree-map mapper/c]
           [tree-filter filter/c]
           [tree-fold (->* ((binary-composition/c any/c) sequence?)
                           (any/c
