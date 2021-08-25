@@ -248,3 +248,31 @@ Trees of this schema may be translated to any format (such as the original sourc
                             #:empty-pred empty-tree?))
   ]
 }
+
+@section{Working With Symbolic Expressions}
+
+A common type of data that you might work with in Lisp-land is a @deftech{symex}, also known as a symbolic expression, S-expression, or, as it is sometimes called in Racket, a @tech/reference{datum}. A symex is just the usual syntax in the Lisp family of languages, and is defined recursively as either being a list of symexes or an atom, the latter class of which forms the syntactic base case and includes e.g. literals and identifiers. We have already seen that nested lists are naturally tree-structured, and this means that we can use the interfaces in this module to manipulate them, although the structure with symexes is a little different from the canonical nested list representation we have been using.
+
+Whatever the format of the tree-structured data, in order to use these interfaces on it, we first need to extract a canonical tree representation using @racket[make-tree]. To do this, we must ask, "What are the nodes in this representation? And how do we get the children of each node?" Let's look at an example: @racket[(+ 1 (* 2 3))]. With some reflection, we can convince ourselves that nodes in this tree correspond to sub-expressions of this expression, with the whole expression itself being the root node. Since the default behavior with @racket[make-tree] is already to treat the input itself as the data in the node, it only remains to pass in an appropriate function @racket[f] which will produce a list of the children of a given node. For the example here, it would seem that this function should be @racket[identity] (or equivalently, @racket[values]) since the expression itself is a list consisting of the children we've identified. But what about the sub-expression @racket[+] which is also a node? The function @racket[f] must return a @racket[list] of children, but calling @racket[values] on @racket[+] does not produce a list. In this case, what we want is for the function to produce the empty list, since the node @racket[+] has no sub-expressions, i.e. no children. So, what we are looking for is a function that returns the input if the input is a list, and the empty list if it is an atom.
+
+That is to say, in order to work with symex-structured data, we can use @racket[(λ (v) (if (list? v) v null))] for @racket[f] in the @racket[make-tree] interface.
+
+As an example, you could emulate the steps in a tree-accumulation style Lisp interpreter by traversing a symex using an appropriate traversal and evaluating the results.
+
+@examples[
+    #:label #f
+    #:eval eval-for-docs
+    (define expression '(+ (* 2 3) (- 10 (* 3 12))))
+    (eval expression)
+    (->list
+     (map eval
+          (tree-traverse #:order 'post
+                         #:converse? #t
+                         (make-tree (λ (v)
+                                      (if (list? v)
+                                          v
+                                          null))
+                                    expression))))
+  ]
+
+The interfaces in this module may also be useful in writing parsers and macros, where you may need to transform syntax (trees) in a structured way.
