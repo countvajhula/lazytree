@@ -8,10 +8,14 @@
                     (except-in racket
                                map
                                filter
+                               first
+                               rest
                                sequence?)
                     (only-in data/collection
                              map
                              filter
+                             first
+                             rest
                              sequence?)
                     (only-in relation
                              fold
@@ -89,6 +93,22 @@ Trees of this schema may be translated to any format (such as the original sourc
     (export-tree list (make-tree taxon-children
                                  mammal
                                  #:with-data taxon-name))
+  ]
+}
+
+@deftogether[(
+@defproc[(data [t sequence?])
+         any/c]
+@defproc[(children [t sequence?])
+         sequence?]
+)]{
+  Aliases for @racket[first] and @racket[rest], respectively, these access the data contained in a node and the children of the node, respectively. Note that "node" and "tree" are different ways of talking about the same thing since nodes in the tree representation are always trees themselves. The result of @racket[data] could be any value, while @racket[children] evaluates to a sequence of nodes or trees that are the immediate children of @racket[t].
+
+@examples[
+    #:eval eval-for-docs
+	(data '(1 (2 (3) (4)) (5 (6))))
+	(children '(1 (2 (3) (4)) (5 (6))))
+	(->list (map data (children '(1 (2 (3) (4)) (5 (6))))))
   ]
 }
 

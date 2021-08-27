@@ -22,6 +22,8 @@
                           (#:with-data procedure?
                            #:empty-pred predicate/c)
                           sequence?)]
+          [data reducer/c]
+          [children map/c]
           [export-tree (->* (procedure?
                              sequence?)
                             (#:empty-cons (maybe/c thunk/c))
@@ -73,6 +75,10 @@
                                #:empty-pred empty-pred)
                         (f node)))))
 
+(define children rest)
+
+(define data first)
+
 (define (export-tree f
                      tree
                      #:empty-cons [empty-cons #f])
@@ -80,30 +86,30 @@
   (if (empty? tree)
       (if empty-cons (empty-cons) '())
       (apply f
-             (first tree)
+             (data tree)
              (filter (if empty-cons
                          true.
                          (!! null?))
                      (map (curry export-tree
                                  f
                                  #:empty-cons empty-cons)
-                          (rest tree))))))
+                          (children tree))))))
 
 (define (tree-map f tree)
   (if (empty? tree)
       empty-stream
-      (stream-cons (f (first tree))
+      (stream-cons (f (data tree))
                    (map (curry tree-map f)
-                        (rest tree)))))
+                        (children tree)))))
 
 (define (tree-filter f tree)
   (if (empty? tree)
       empty-stream
-      (if (f (first tree))
-          (stream-cons (first tree)
+      (if (f (data tree))
+          (stream-cons (data tree)
                        (remove-when empty?
                                     (map (curry tree-filter f)
-                                         (rest tree))))
+                                         (children tree))))
           empty-stream)))
 
 (define (tree-fold f
@@ -125,13 +131,13 @@
                                 #:converse? [converse? #f])
   (if (empty? tree)
       empty-stream
-      (stream-cons (first tree)
+      (stream-cons (data tree)
                    (->stream  ; handle `ID`
                     (join (map (curry tree-traverse-preorder
                                       #:converse? converse?)
                                (if converse?
-                                   (reverse (rest tree))
-                                   (rest tree))))))))
+                                   (reverse (children tree))
+                                   (children tree))))))))
 
 (define (tree-traverse-postorder tree
                                  #:converse? [converse? #f])
@@ -140,23 +146,23 @@
       (.. (join (map (curry tree-traverse-postorder
                             #:converse? converse?)
                      (if converse?
-                         (reverse (rest tree))
-                         (rest tree))))
-          (stream (first tree)))))
+                         (reverse (children tree))
+                         (children tree))))
+          (stream (data tree)))))
 
 (define (tree-traverse-inorder tree
                                #:converse? [converse? #f])
   (if (empty? tree)
       empty-stream
-      (if (empty? (rest tree))
-          (stream (first tree))
+      (if (empty? (children tree))
+          (stream (data tree))
           (let ([children (if converse?
-                              (reverse (rest tree))
-                              (rest tree))])
+                              (reverse (children tree))
+                              (children tree))])
             (apply ..
                    (tree-traverse-inorder (first children)
                                           #:converse? converse?)
-                   (stream (first tree))
+                   (stream (data tree))
                    (map (curry tree-traverse-inorder
                                #:converse? converse?)
                         (rest children)))))))
@@ -171,11 +177,11 @@
             (let ([current (first queue)])
               (if (empty? current)
                   (loop (rest queue))
-                  (stream-cons (first current)
+                  (stream-cons (data current)
                                (loop (.. (rest queue)
                                          (if converse?
-                                             (reverse (rest current))
-                                             (rest current)))))))))))
+                                             (reverse (children current))
+                                             (children current)))))))))))
 
 (define (tree-traverse tree
                        #:order [order 'pre]
@@ -200,6 +206,15 @@
   (define tests
     (test-suite
      "Lazytree tests"
+     (test-case
+         "Basic interfaces"
+       (define t (make-tree #:with-data first
+                            rest
+                            '(1 (2 (3) (4)) (5 (6)))))
+       (check-equal? (data t) 1)
+       (check-equal? (length (children t)) 2)
+       (check-equal? (->list (map data (children t))) '(2 5)))
+
      (test-case
          "Empty list-formatted tree"
        (define t (list))
@@ -530,4 +545,4 @@
                        (list 0 1 5 8 10 17 23 28 34 39)))))))
 
 (module+ test
-  (run-tests tests))
+  (void (run-tests tests)))
