@@ -17,15 +17,13 @@
 (require "lazytree/private/util.rkt")
 
 (provide (contract-out
-          [make-tree (->* ((encoder/c sequence?)
-                           any/c)
+          [make-tree (->* (lift/c any/c)
                           (#:with-data procedure?
                            #:empty-pred predicate/c)
                           sequence?)]
           [data reducer/c]
           [children map/c]
-          [export-tree (->* (procedure?
-                             sequence?)
+          [export-tree (->* (procedure? sequence?)
                             (#:empty-cons (maybe/c thunk/c))
                             any/c)]
           [tree-traverse (->* (sequence?)
@@ -47,7 +45,8 @@
                            #:argument-order (one-of/c 'abb
                                                       'bab)
                            #:with-steps? boolean?)
-                          any/c)]))
+                          any/c)]
+          [tree-accumulate (reducer/c (head procedure?))]))
 
 (module+ test
   (require rackunit
@@ -126,6 +125,14 @@
          #:into base
          #:order argument-order
          #:with-steps? with-steps?))
+
+;; Based on:
+;; https://www.cs.cornell.edu/courses/cs3110/2019sp/textbook/hop/fold_trees.html
+(define (tree-accumulate f tree)
+  (apply f
+         (stream* (data tree)
+                  (map (curry tree-accumulate f)
+                       (children tree)))))
 
 (define (tree-traverse-preorder tree
                                 #:converse? [converse? #f])

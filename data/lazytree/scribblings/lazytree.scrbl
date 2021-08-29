@@ -194,6 +194,8 @@ Trees of this schema may be translated to any format (such as the original sourc
 
   Analogously to @racket[fold], combines elements of the tree using the function @racket[f]. While normal folds have a left or right direction, the direction of a tree fold is determined by the traversal order, which is specified via @racket[order].
 
+  See @racket[tree-accumulate] for another way to fold over trees.
+
 @examples[
     #:eval eval-for-docs
     (struct taxon (name children))
@@ -205,6 +207,40 @@ Trees of this schema may be translated to any format (such as the original sourc
                          #:with-data taxon-name))
     (tree-fold .. t)
     (tree-fold #:order 'post .. t)
+  ]
+}
+
+@defproc[(tree-accumulate [f (-> any/c ... any/c)]
+                          [t sequence?])
+         any/c]{
+
+  Similarly to @racket[tree-fold], this combines elements of the tree using the function @racket[f], but it does so respecting the hierarchy of the tree rather than in terms of a linear ordering on the tree. The first argument to @racket[f] will be the data value for a particular node, and the remaining arguments will be the accumulated results from each subtree at that level. Since the number of children of each node may vary in general (and e.g. leaf nodes have none), @racket[f] must be variadic, i.e. it must accept an arbitrary number of arguments.
+
+  To learn more about how this interface works, see @hyperlink["https://www.cs.cornell.edu/courses/cs3110/2019sp/textbook/hop/fold_trees.html"]{Fold with Trees}.
+
+@examples[
+    #:eval eval-for-docs
+    (define t '(1 (2 (3) (4)) (5 (6))))
+    (tree-accumulate + t)
+    (define (size t)
+      (tree-accumulate (λ (v . vs)
+                          (apply + 1 vs))
+                       t))
+    (size t)
+    (define (depth t)
+      (tree-accumulate (λ (v . vs)
+                          (if (empty? vs)
+                              1
+                              (add1 (apply max vs))))
+                       t))
+    (depth t)
+    (define (preorder t)
+      (tree-accumulate (λ (v . vs)
+                          (if (empty? vs)
+                              (list v)
+                              (join (append (list (list v)) vs))))
+                       t))
+    (preorder t)
   ]
 }
 
@@ -273,11 +309,39 @@ Trees of this schema may be translated to any format (such as the original sourc
 
 A common type of data that you might work with in Lisp-land is a @deftech{symex}, also known as a symbolic expression, S-expression, or, as it is sometimes called in Racket, a @tech/reference{datum}. A symex is just the usual syntax in the Lisp family of languages, and is defined recursively as either being a list of symexes or an atom, the latter class of which forms the syntactic base case and includes e.g. literals and identifiers. We have already seen that nested lists are naturally tree-structured, and this means that we can use the interfaces in this module to manipulate them, although the structure with symexes is a little different from the canonical nested list representation we have been using.
 
-Whatever the format of the tree-structured data, in order to use these interfaces on it, we first need to extract a canonical tree representation using @racket[make-tree]. To do this, we must ask, "What are the nodes in this representation? And how do we get the children of each node?" Let's look at an example: @racket[(+ 1 (* 2 3))]. With some reflection, we can convince ourselves that nodes in this tree correspond to sub-expressions of this expression, with the whole expression itself being the root node. Since the default behavior with @racket[make-tree] is already to treat the input itself as the data in the node, it only remains to pass in an appropriate function @racket[f] which will produce a list of the children of a given node. For the example here, it would seem that this function should be @racket[identity] (or equivalently, @racket[values]) since the expression itself is a list consisting of the children we've identified. But what about the sub-expression @racket[+] which is also a node? The function @racket[f] must return a @racket[list] of children, but calling @racket[values] on @racket[+] does not produce a list. In this case, what we want is for the function to produce the empty list, since the node @racket[+] has no sub-expressions, i.e. no children. So, what we are looking for is a function that returns the input if the input is a list, and the empty list if it is an atom.
+Whatever the format of the tree-structured data, in order to use these interfaces on it, we first need to extract a canonical tree representation using @racket[make-tree]. To do this, we must ask, "What are the nodes in this representation? And how do we get the children of each node?" Let's look at an example: @racket[(+ 1 (* 2 3))]. There are a couple of different choices we could make here. The first is to treat the operator as the data in the node and the operands as the children. Another choice we could make is to consider sub-expressions of this expression to correspond to nodes in the tree, with the whole expression itself being the data content of the root node. Each of these options could be useful in different cases; let's look at them in turn.
 
-That is to say, in order to work with symex-structured data, we can use @racket[(λ (v) (if (list? v) v null))] for @racket[f] in the @racket[make-tree] interface.
+In the first option, since the operator is always first in a symex, with the remaining elements being operands, we'd like to use @racket[first] as the data function, and @racket[rest] as @racket[f] to indicate the children in the @racket[make-tree] interface. But symexes could also be atoms and not just lists, so we'd need to handle this case as well. Specifically, if the symex is an atom, we'd want to use the expression itself as the data, and @racket[null] as the list of children.
 
-As an example, you could emulate the steps in a tree-accumulation style Lisp interpreter by traversing a symex using an appropriate traversal and evaluating the results.
+As an example, we could use such a representation to write a simple "tree accumulation" style Lisp interpreter.
+
+@examples[
+    #:label #f
+    #:eval eval-for-docs
+    (define expression '(+ (* 2 3) (- 10 (* 3 12))))
+    (eval expression)
+    (define t
+      (make-tree #:with-data (λ (v)
+                               (if (list? v)
+                                   (first v)
+                                   v))
+                 (λ (v)
+                   (if (list? v)
+                       (rest v)
+                       null))
+                 expression))
+    (define (tree-eval v . args)
+      (if (empty? args)
+          (eval v)
+          (apply (eval v) args)))
+    (define (my-eval expr)
+      (tree-accumulate tree-eval expr))
+    (my-eval t)
+  ]
+
+For the second option, we seek to treat the expressions themselves as the data contents of each node. Since the default behavior with @racket[make-tree] is already to treat the input itself as the data in the node, it only remains to pass in an appropriate function @racket[f] which will produce a list of the children of a given node. For the example here, it would seem that this function should be @racket[identity] (or equivalently, @racket[values]) since the expression itself is a list consisting of the children we've identified. But what about the sub-expression @racket[+] which is an atomic node? The function @racket[f] must return a @racket[list] of children, but calling @racket[values] on @racket[+] does not produce a list. In this case, what we want is for the function to produce the empty list, since the node @racket[+] has no sub-expressions, i.e. no children. So, what we are looking for is a function that returns the input if the input is a list, and the empty list if it is an atom, that is to say, something like @racket[(λ (v) (if (list? v) v null))].
+
+In the previous example we saw that the first representation allowed us to implement a simple Lisp interpreter. We got the answer we were looking for, but what if we wanted to see the steps involved in the evaluation? We could emulate these steps in the second representation by traversing the tree using an appropriate traversal and evaluating the results, since each node in this representation represents an entire subexpression used in computing the overall result.
 
 @examples[
     #:label #f
