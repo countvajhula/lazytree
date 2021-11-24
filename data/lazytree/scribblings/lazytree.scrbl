@@ -19,6 +19,7 @@
                              sequence?)
                     (only-in relation
                              fold
+                             join
                              false.
                              ->list
                              /=
