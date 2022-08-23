@@ -5,6 +5,7 @@
          racket/sandbox
          pict/private/layout
          @for-label[data/lazytree
+                    racket/undefined
                     (except-in racket
                                map
                                filter
@@ -186,14 +187,14 @@ Trees of this schema may be translated to any format (such as the original sourc
 
 @defproc[(tree-fold [f (-> any/c any/c any/c)]
                     [t sequence?]
-                    [base any/c]
+                    [base any/c undefined]
                     [#:order order (one-of/c 'pre 'post 'in 'level) 'pre]
                     [#:converse? converse? boolean? #f]
                     [#:argument-order argument-order (one-of/c 'abb 'bab) 'abb]
                     [#:with-steps? with-steps? boolean? #f])
          any/c]{
 
-  Analogously to @racket[fold], combines elements of the tree using the function @racket[f]. While normal folds have a left or right direction, the direction of a tree fold is determined by the traversal order, which is specified via @racket[order].
+  Analogously to @racket[fold], combines elements of the tree using the function @racket[f]. While normal folds have a left or right direction, the direction of a tree fold is determined by the traversal order, which is specified via @racket[order]. If @racket[base] is left out, it will be inferred as described in the documentation for @racket[fold].
 
   See @racket[tree-accumulate] for another way to fold over trees.
 
