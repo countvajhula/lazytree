@@ -24,7 +24,7 @@
                              false.
                              ->list
                              /=
-                             ..)]]
+                             ~)]]
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -207,8 +207,8 @@ Trees of this schema may be translated to any format (such as the original sourc
     (define t (make-tree taxon-children
                          mammal
                          #:with-data taxon-name))
-    (tree-fold .. t)
-    (tree-fold #:order 'post .. t)
+    (tree-fold ~ t)
+    (tree-fold #:order 'post ~ t)
   ]
 }
 

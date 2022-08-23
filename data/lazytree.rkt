@@ -150,12 +150,12 @@
                                  #:converse? [converse? #f])
   (if (empty? tree)
       empty-stream
-      (.. (join (map (curry tree-traverse-postorder
-                            #:converse? converse?)
-                     (if converse?
-                         (reverse (children tree))
-                         (children tree))))
-          (stream (data tree)))))
+      (~ (join (map (curry tree-traverse-postorder
+                           #:converse? converse?)
+                    (if converse?
+                        (reverse (children tree))
+                        (children tree))))
+         (stream (data tree)))))
 
 (define (tree-traverse-inorder tree
                                #:converse? [converse? #f])
@@ -166,7 +166,7 @@
           (let ([children (if converse?
                               (reverse (children tree))
                               (children tree))])
-            (apply ..
+            (apply ~
                    (tree-traverse-inorder (first children)
                                           #:converse? converse?)
                    (stream (data tree))
@@ -185,10 +185,10 @@
               (if (empty? current)
                   (loop (rest queue))
                   (stream-cons (data current)
-                               (loop (.. (rest queue)
-                                         (if converse?
-                                             (reverse (children current))
-                                             (children current)))))))))))
+                               (loop (~ (rest queue)
+                                        (if converse?
+                                            (reverse (children current))
+                                            (children current)))))))))))
 
 (define (tree-traverse tree
                        #:order [order 'pre]
