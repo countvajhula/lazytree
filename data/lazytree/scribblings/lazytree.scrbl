@@ -26,20 +26,26 @@
                              /=
                              ~)]]
 
-@(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-                                 '(require racket/math
-                                           (except-in data/collection
-                                                      append
-                                                      index-of
-                                                      foldl
-                                                      foldl/steps)
-                                           relation
-                                           data/lazytree
-                                           racket/stream))))
+@(define (make-eval-for-docs . exprs)
+   (parameterize ([sandbox-output 'string]
+                  [sandbox-error-output 'string]
+                  [sandbox-memory-limit #f])
+     (apply make-base-eval
+            '(require racket/math
+                      (except-in data/collection
+                                 append
+                                 index-of
+                                 foldl
+                                 foldl/steps)
+                      relation
+                      data/lazytree
+                      racket/stream)
+            exprs)))
+
+@; adding a lambda indirection in creating the evaluator
+@; fixes "dynamic-require: name is protected [...] name: 'syntax-local-expand-observer
+@; reason unknown.
+@(define eval-for-docs (make-eval-for-docs))
 
 @(define tree-layout-eval (make-base-eval))
 @(tree-layout-eval '(require pict/tree-layout pict))
